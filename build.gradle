@@ -4,15 +4,42 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:0.7.1+'
+        classpath "com.android.tools.build:gradle:${ANDROID_GRADLE_PLUGIN_VERSION}"
     }
 }
 
-apply plugin: 'android-library'
+import org.apache.tools.ant.taskdefs.condition.Os
+
+apply plugin: 'com.android.library'
+
+def getNdkBuildName() {
+    if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+        return "ndk-build.cmd"
+    } else {
+        return "ndk-build"
+    }
+}
+
+def getNdkBuildFullPath() {
+    // we allow to provide full path to ndk-build tool
+    if (hasProperty('ndk.command')) {
+        return property('ndk.command')
+    }
+    // or just a path to the containing directiry
+    if (hasProperty('ndk.dir')) {
+        def path = property('ndk.dir')
+        if (!path.endsWith(File.separator)) {
+            path += File.separator
+        }
+        return path + getNdkBuildName()
+    }
+    // if none of above is provided, we assume ndk-build is already in $PATH
+    return getNdkBuildName()
+}
 
 android {
     compileSdkVersion 19
-    buildToolsVersion "19.0.0"
+    buildToolsVersion "19.1.0"
 
     defaultConfig {
       minSdkVersion 9
@@ -28,7 +55,7 @@ android {
     }
 
     task ndkBuildRelease(type: Exec) {
-      commandLine 'ndk-build', '-C', file('native/crypto/').absolutePath,
+      commandLine getNdkBuildFullPath(), '-C', file('native/crypto/').absolutePath,
        'NDK_APPLICATION_MK=${PWD}/native/Application.mk',
        'NDK_MODULE_PATH=${PWD}/native/third-party/',
        'APP_BUILD_SCRIPT=${PWD}/native/crypto/Android.mk',
@@ -53,8 +80,8 @@ if (!project.hasProperty('sonatypeRepo') ||
 apply plugin: 'maven'
 apply plugin: 'signing'
 
-version = "1.0.0"
-group = "com.facebook.conceal"
+version = $VERSION_NAME
+group = $GROUP
 
 configurations {
     archives {

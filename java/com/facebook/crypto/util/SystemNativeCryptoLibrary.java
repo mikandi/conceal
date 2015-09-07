@@ -47,7 +47,8 @@ public class SystemNativeCryptoLibrary implements NativeCryptoLibrary {
     }
     try {
       for (String name : LIBS) {
-        System.loadLibrary(name);
+//    	  Log.e("CONCEAL", "CONCEAL loading library " + name);
+          System.loadLibrary(name);
       }
       mLibrariesLoaded = true;
     } catch (UnsatisfiedLinkError error) {
