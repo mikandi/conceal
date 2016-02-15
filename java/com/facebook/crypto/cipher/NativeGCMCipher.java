@@ -14,7 +14,7 @@ import java.util.Locale;
 import com.facebook.crypto.exception.CryptoInitializationException;
 import com.facebook.crypto.util.Assertions;
 import com.facebook.crypto.util.NativeCryptoLibrary;
-import com.facebook.proguard.annotations.DoNotStrip;
+import com.facebook.crypto.proguard.annotations.DoNotStrip;
 
 /**
  * Various native functions to encrypt/decrypt data using GCM.
@@ -67,10 +67,10 @@ public class NativeGCMCipher {
     mCurrentState = STATE.DECRYPT_INITIALIZED;
   }
 
-  public int update(byte[] data, int offset, int dataLen, byte[] output)
+  public int update(byte[] data, int offset, int dataLen, byte[] output, int outputOffset)
       throws NativeGCMCipherException {
     ensureInInitalizedState();
-    int bytesRead = nativeUpdate(data, offset, dataLen, output);
+    int bytesRead = nativeUpdate(data, offset, dataLen, output, outputOffset);
     if (bytesRead < 0) {
       throw new NativeGCMCipherException(
           formatStrLocaleSafe(
@@ -152,7 +152,7 @@ public class NativeGCMCipher {
   private native int nativeEncryptInit(byte[] key, byte[] iv);
   private native int nativeDecryptInit(byte[] key, byte[] iv);
 
-  private native int nativeUpdate(byte[] data, int offset, int dataLen, byte[] output);
+  private native int nativeUpdate(byte[] data, int offset, int dataLen, byte[] output, int outputOffset);
   private native int nativeUpdateAad(byte[] data, int dataLength);
 
   private native int nativeEncryptFinal(byte[] tag, int tagLen);

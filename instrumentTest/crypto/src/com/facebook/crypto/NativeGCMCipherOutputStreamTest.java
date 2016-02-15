@@ -101,6 +101,30 @@ public class NativeGCMCipherOutputStreamTest extends InstrumentationTestCase {
     assertTrue(CryptoTestUtils.DATA_IS_NOT_ENCRYPTED, !Arrays.equals(mData, encryptedData));
   }
 
+  public void testWriteDataUsingOffsetsAndPreallocatedSmallBuffer() throws Exception {
+      testWriteDataUsingOffsetsAndPreallocatedBuffer(100);
+  }
+
+  public void testWriteDataUsingOffsetsAndPreallocatedBigBuffer() throws Exception {
+      testWriteDataUsingOffsetsAndPreallocatedBuffer(1200);
+  }
+
+  private void testWriteDataUsingOffsetsAndPreallocatedBuffer(int bufferSize) throws Exception {
+    OutputStream outputStream = mCrypto.getCipherOutputStream(
+        mCipherOutputStream,
+        new Entity(CryptoTestUtils.ENTITY_NAME),
+            new byte[bufferSize]);
+    outputStream.write(mData, 0, mData.length / 2);
+    outputStream.write(mData, mData.length / 2, mData.length / 2 + mData.length % 2);
+    outputStream.close();
+    byte[] encryptedData = CryptoSerializerHelper.cipherText(mCipherOutputStream.toByteArray());
+
+    assertTrue(CryptoTestUtils.ENCRYPTED_DATA_NULL, encryptedData != null);
+    assertTrue(CryptoTestUtils.ENCRYPTED_DATA_OF_DIFFERENT_LENGTH,
+        encryptedData.length == mData.length);
+    assertTrue(CryptoTestUtils.DATA_IS_NOT_ENCRYPTED, !Arrays.equals(mData, encryptedData));
+  }
+
   public void testEncryptedDataIsExpected() throws Exception {
     String dataToEncrypt = "data to encrypt";
     String expectedEncryptedString = "69VhniqXP+xA0CcKJFx5";
